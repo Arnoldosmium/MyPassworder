@@ -231,14 +231,14 @@ class FullCardPane extends JPanel implements ListSelectionListener, ActionListen
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		
-		JLabel left = new JLabel("Available parts:");
+		JLabel left = new JLabel("PassPhrase Groups:");
 		left.setFont(CORE);
 		gbc.gridx = gbc.gridy = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 5, 5, 5);
 		add(left,gbc);
 		
-		JLabel right = new JLabel("Phrase candidates (one per line):");
+		JLabel right = new JLabel("PassPhrase candidates (one per line):");
 		right.setFont(CORE);
 		gbc.gridx = 1;
 		add(right, gbc);
