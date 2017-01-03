@@ -1,3 +1,9 @@
+/* Frame: Pattern Editor
+ * @author Arnold Lin
+ * @date first commit 2016/12/31
+ * 
+ * The frame in charge of changing password pattern
+ */
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
@@ -12,9 +18,6 @@ import javax.swing.text.NumberFormatter;
 
 class PatternEditor extends JFrame implements ListDataListener, WindowListener{
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	private Connection conn;
@@ -81,13 +84,11 @@ class PatternEditor extends JFrame implements ListDataListener, WindowListener{
 	}
 
 	@Override
-	public void windowOpened(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void windowOpened(WindowEvent e) {}
 
 	@Override
 	public void windowClosing(WindowEvent e) {
+		// On closing, append the new version to DB
 		try {
 			this.leftPane.saveToSQL(conn);
 			this.dataManager.saveToSQL(conn);
@@ -99,35 +100,24 @@ class PatternEditor extends JFrame implements ListDataListener, WindowListener{
 	}
 
 	@Override
-	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
-	}
+	public void windowClosed(WindowEvent e) {}
 
 	@Override
-	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void windowIconified(WindowEvent e) {}
 
 	@Override
-	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void windowDeiconified(WindowEvent e) {}
 
 	@Override
-	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void windowActivated(WindowEvent e) {}
 
 	@Override
-	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void windowDeactivated(WindowEvent e) {}
 }
 
+/* class BackendDataManager
+ * The data manager in charge of PassPhrases and groups
+ */
 class BackendDataManager {
 	
 	private DefaultListModel<String> lparts;
@@ -214,6 +204,9 @@ class BackendDataManager {
 	}
 }
 
+/* class FullCardPane
+ * the UI in charge of changing PassPhrases
+ */
 class FullCardPane extends JPanel implements ListSelectionListener, ActionListener{
 	JScrollPane scrollParts;
 	JList<String> parts;
@@ -349,6 +342,9 @@ class FullCardPane extends JPanel implements ListSelectionListener, ActionListen
 	}
 }
 
+/* class FullStructPane
+ * the dynamic UI in charge of creating password structure
+ */
 class FullStructPane extends JPanel implements ActionListener{
 	private static final long serialVersionUID = 1L;
 	static final int MAXI_OUT = 6;
@@ -490,10 +486,12 @@ class FullStructPane extends JPanel implements ActionListener{
 	}
 }
 
+/* class StructPane
+ * the dynamic UI contains up to 6 EntryPanes.
+ * The sequence of EntryPanes will be the sequence in the password generating step.
+ */
 class StructPane extends JPanel implements ActionListener, FocusListener{
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
 	private static Font titleFont = new Font("SansSerif", Font.PLAIN, 15);
 	
@@ -626,12 +624,11 @@ class StructPane extends JPanel implements ActionListener, FocusListener{
 	
 }
 
-
+/* class EntryPane 
+ * the dynamic UI of an "entry": a pack of probablity this entry will be used in password generating step, the PassPhrase group the step will be used.
+ */
 class EntryPane extends JPanel{
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	
 	private static Font mono = new Font("Monospace", Font.PLAIN, 12);

@@ -1,3 +1,7 @@
+/** JGraphicsRB: An extension of JRoundButton, supporting 4 basic graphics: plus, minus, cross signs, and a pen graphic
+ * @author Arnold Lin
+ * @date first commit 2016/12/31
+ */
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;

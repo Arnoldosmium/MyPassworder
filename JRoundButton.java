@@ -1,3 +1,7 @@
+/** JRoundButton: A self-designed round button that has simple animation while the mouse interacts
+ * @author Arnold Lin
+ * @date first commit 2016/12/31
+ */
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;

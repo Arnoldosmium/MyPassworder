@@ -1,3 +1,7 @@
+/** Utils
+  * @author Arnold Lin 
+  * @date first commit 2016/12/31, update at 2017/1/3
+  */
 import java.util.*;
 import java.util.regex.*;
 
@@ -26,11 +30,11 @@ public class Utils {
 	}
 	
 	private static String basicCleanse(String original){
-		return original.replaceAll("[^A-Za-z0-9._\\-+~\\$]", "");
+		return original.replaceAll("[\"\':;]", "");
 	}
 	
 	public static String titleSafeCleanse(String original){
-		return basicCleanse(original);
+		return basicCleanse(original.replaceAll("\n", ""));
 	}
 	
 	public static String contentSafeCleanse(String original){

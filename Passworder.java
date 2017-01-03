@@ -1,8 +1,26 @@
+/** My Passworder Ver 0.11
+  * @author Arnold Lin
+  * @date first commit 2016/12/31, updated at 2017/1/3
+  * 
+  * A quick desktop software that helps to create and keep passwords.
+  * The key idea is: people are more likely to retrieve memory if a "clue word" is provided.
+  * My passworder is responsible to remember "clue words", e.g. my birthday, the brand of my first car, the date I met her...
+  * (You can also put password here; yet it is discouraged due to security reasons, apparently)
+  * 
+  * Sometimes, it is also frustrating when new passwords are needed. Random passwords are hard to remember; current passwords are not allowed to use.
+  * What about combine clue words together?!
+  * The nature of permutation can created a huge amount of passwords that seldomly repretitive, yet easy to remember.   
+  * 
+  * So here comes the My Passworder! The simple prototype that achieves the goal.
+  */
+
 import java.util.*;
 import java.util.List;
 import java.sql.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -12,13 +30,21 @@ public class Passworder {
 	private static Statement stmt;
 	
 	public static void main(String[] args) throws Exception {
-		conn = DriverManager.getConnection("jdbc:sqlite:data.db");
+	
+		// The database will be saved local: ./data/db
+		File dataFolder = new File("data" + File.separator);
+		if(!dataFolder.exists())
+			if(!dataFolder.mkdirs()){
+				System.err.println("Failed to initialize database.");
+				System.exit(-1);
+			}
+		conn = DriverManager.getConnection("jdbc:sqlite:data/db");
 		stmt = conn.createStatement();
-		// Prepare tables
+		
+		// Prepare tables (if not ready)
 		prepareTables();
 		
 		EventQueue.invokeLater(() -> {
-			//new PatternEditor(stmt).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			new MainFrame(conn);
 		});
 	}
@@ -55,9 +81,6 @@ public class Passworder {
 
 class MainFrame extends JFrame implements WindowListener{
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private static final Font NORMAL = new Font("SansSerif", Font.PLAIN, 15);
 	
@@ -66,7 +89,7 @@ class MainFrame extends JFrame implements WindowListener{
 	private JScrollPane swebs;
 	private JLabel currweb;
 	private JLabel itera;
-	private Button donext;
+	private JButton donext, cModel;
 	private JPanel showTable;
 	private JGraphicsRB plus;
 	private JGraphicsRB minus;
@@ -85,7 +108,7 @@ class MainFrame extends JFrame implements WindowListener{
 	private WebObject currentSelection = null;
 	
 	public MainFrame(Connection conn){
-		super("My Passworder Ver 0.1");
+		super("My Passworder Ver 0.11");
 		this.conn = conn;
 		try{
 			stmt = conn.createStatement();
@@ -112,7 +135,6 @@ class MainFrame extends JFrame implements WindowListener{
 			new PatternEditor(this, patterns.isEmpty() ? null : patterns.get(patterns.size()-1), conn);
 		});
 		setJMenuBar(mBar);
-		
 		
 		// Leftpane
 		left = new JPanel(new GridBagLayout());
@@ -160,24 +182,43 @@ class MainFrame extends JFrame implements WindowListener{
 		right.add(itera, gbc);
 		
 		// Do next
-		donext = new Button("Next Version");
+		donext = new JButton("Next Version");
 		donext.setFont(NORMAL);
 		donext.setEnabled(false);
 		gbc.gridx = 1;
 		gbc.anchor = GridBagConstraints.WEST;
-		gbc.insets = new Insets(10,10,10,10);
+		
 		right.add(donext, gbc);
 		donext.addActionListener((e) -> {
 			nextStage();
 			refreshUI();
 		});
 		
+		// Refresh Model
+		cModel = new JButton("Use Current Model");
+		cModel.setFont(NORMAL);
+		cModel.setEnabled(false);
+		gbc.gridy = 2;
+		gbc.gridx = 0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.insets = new Insets(0,10,10,10);
+		right.add(cModel,gbc);
+		cModel.addActionListener(e ->{
+			if(JOptionPane.showConfirmDialog(null, "The current password model will be used.\n"
+					+ "The old versions will not be recoverable.\n"
+					+ "Are you sure?", "Change password model", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION)
+				applyCurrentModel();
+			refreshUI();
+		});
+		
+		// The password structure table
 		showTable = new JPanel(new GridLayout(2, 0, 10, 10));
 		gbc = new GridBagConstraints();
-		gbc.gridy = 2;
+		gbc.gridy = 3;
 		gbc.gridheight = gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.weightx = 1;
-		gbc.weighty = 0.8;
+		gbc.weighty = 0.7;
 		gbc.ipady = 20;
 		gbc.anchor = GridBagConstraints.NORTH;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -187,12 +228,14 @@ class MainFrame extends JFrame implements WindowListener{
 		b.setTitleFont(NORMAL);
 		showTable.setBorder(b);
 		
+		// Three buttons panel
 		JPanel threeBtn = new JPanel(new GridLayout(1,3,10,10));
 		threeBtn.add(plus = new JGraphicsRB(JGraphicsRB.PLUS));
 		plus.addActionListener((e) -> {
 			String result = JOptionPane.showInputDialog(null, "Please enter a name of the new password instance", "New Password Instance", JOptionPane.INFORMATION_MESSAGE);
 			if(result != null)
 				addWebObject(result);
+			refreshUI();
 		});
 		threeBtn.add(change = new JGraphicsRB(JGraphicsRB.PEN));
 		change.addActionListener(e -> {
@@ -218,13 +261,14 @@ class MainFrame extends JFrame implements WindowListener{
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.ipadx = 20;
+		gbc.weightx = 0.1;
 		gbc.weighty = 1;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(left, gbc);
 		
 		gbc.gridx = 1;
 		gbc.ipadx = 0;
-		gbc.weightx = 1;
+		gbc.weightx = 0.9;
 		add(right,gbc);
 		
 		pack();
@@ -235,11 +279,8 @@ class MainFrame extends JFrame implements WindowListener{
 		
 		setVisible(true);
 		
-		if(patterns.isEmpty()){
-			JOptionPane.showMessageDialog(null, "Thanks for using MyPassworder.\nBefore you start, please specify your general password structure.",
-					"First Time User", JOptionPane.INFORMATION_MESSAGE);
-			editItem.doClick();
-		}
+		if(patterns.isEmpty())
+			initPattern();
 	}
 
 	private void initData() throws SQLException{
@@ -253,33 +294,41 @@ class MainFrame extends JFrame implements WindowListener{
 		refreshDB();
 	}
 	
+	private void initPattern(){
+		JOptionPane.showMessageDialog(null, "Thanks for using MyPassworder.\nBefore you start, please specify your general password structure.",
+				"First Time User", JOptionPane.INFORMATION_MESSAGE);
+		editItem.doClick();
+	}
+	
 	private void refreshDB() throws SQLException{
 		patterns = PasswordPattern.compileQuery(stmt.executeQuery("select * from EveList order by actseq, acttype"));
 	}
 	
 	private void addWebObject(String obj){
-		String key = obj;
+		String key = obj = Utils.titleSafeCleanse(obj);
 		int i = 0;
 		while(lwebs.contains(key)){
 			key = String.format("%s%03d", obj, i++);
 		}
+		// First, update sql
 		try{
 			PreparedStatement prp= conn.prepareStatement("insert into WebObjects values (?, ?, ?, ?, ?)");
 			prp.setString(1, obj);
 			prp.setString(2, key);
-			prp.setInt(3, 0);
-			prp.setInt(4, patterns.size() - 1);
+			prp.setInt(3, 1);
+			prp.setInt(4, patterns == null ? 0 : patterns.size() - 1);
 			prp.setInt(5, 0);
 			prp.executeUpdate();
 		}catch (Exception e) {
 			JOptionPane.showMessageDialog(null, String.format("%s - Failed to update database.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		// updated in sql
-		lwebs.addElement(new WebObject(obj, key, 0, patterns.size() - 1, 0));
+		// Then, updated memory
+		lwebs.addElement(new WebObject(obj, key, 1, patterns == null ? 0 : patterns.size() - 1, 0));
 	}
 	
 	private void renameWebObject(String name) {
+		name = Utils.contentSafeCleanse(name);
 		try{
 			PreparedStatement prp = conn.prepareStatement("update WebObjects set name=? where nameid=?");
 			prp.setString(1, name);
@@ -304,6 +353,20 @@ class MainFrame extends JFrame implements WindowListener{
 		}
 		currentSelection.stage += 1;
 	}
+
+	private void applyCurrentModel() {
+		try{
+			PreparedStatement prp = conn.prepareStatement("update WebObjects set stage=1, structVersion=? where nameid=?");
+			prp.setInt(1, patterns.size()-1);
+			prp.setString(2, currentSelection.nameid);
+			prp.executeUpdate();
+		}catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, String.format("%s - Failed to update the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		currentSelection.stage = 1;
+		currentSelection.pwVersion = patterns.size() - 1;
+	}
 	
 	private void removeWebObject() {
 		try{
@@ -326,10 +389,26 @@ class MainFrame extends JFrame implements WindowListener{
 			showTable.add(l);
 			return;
 		}
-		// When reaches, patterns should not be empty
+		
+		// When reaches, patterns should not be empty thou
+		if(patterns.isEmpty()){
+			initPattern();
+			webs.clearSelection();
+			return;
+		}
+		
+		// Hey, don't play around with my little program
+		if(currentSelection.pwVersion >= patterns.size()){
+			JOptionPane.showMessageDialog(null, "Incorrect password structure version. Apply with the latest version", "DATABASE CORRUPTION",
+					JOptionPane.ERROR_MESSAGE);
+			applyCurrentModel();
+		}
+		
+		// Get pattern
 		PasswordPattern patt = patterns.get(currentSelection.pwVersion);
 		List<Tuple<String>> pw = patt.generatePassword(currentSelection.nameid, currentSelection.stage);
 		
+		// Construct password panel
 		for(Tuple<String> each: pw){
 			JLabel t = new JLabel(each.get(0));
 			t.setFont(NORMAL);
@@ -347,6 +426,7 @@ class MainFrame extends JFrame implements WindowListener{
 	private void refreshUI(){
 		boolean selected = !webs.isSelectionEmpty();
 		donext.setEnabled(selected);
+		cModel.setEnabled(selected);
 		currweb.setText( selected ? 
 				(currentSelection = webs.getSelectedValue()).toString() : 
 				((lwebs.getSize() == 0 ? "Add a new" : "Click one") + " to start"));
@@ -393,6 +473,10 @@ class MainFrame extends JFrame implements WindowListener{
 	public void windowDeactivated(WindowEvent e) {}
 }
 
+/* class WebObject 
+ * The corresponding model of WebObjects in DB
+ */
+
 class WebObject{
 	String name;
 	String nameid;
@@ -413,6 +497,10 @@ class WebObject{
 		return this.name;
 	}
 	
+	/* Takes the result of a correctly formatted query, and parse into a list of WebObjects
+	 * @param: ResultSet
+	 * @return: DefaultListModel of WebObjects
+	 */
 	public static DefaultListModel<WebObject> compileQuery(ResultSet r) throws SQLException{
 		DefaultListModel<WebObject> rtn = new DefaultListModel<>();
 		while(r.next()){
@@ -422,6 +510,10 @@ class WebObject{
 	}
 }
 
+/* class PasswordPattern 
+ * The corresponding model of EveList in DB
+ * Parsed and "executable"
+ */
 class PasswordPattern{
 	
 	List<List<Tuple>> probTuple;
@@ -434,6 +526,9 @@ class PasswordPattern{
 		this.version = version;
 	}
 	
+	/* 
+	 * Parse pattern strings: [Prob, PassPhrase Group A],[Prob, PassPhrase Group B], ... : [... Next part ... ] : ...  
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setPattern(String patternStr){
 		String[] parts = patternStr.split(":");
@@ -450,6 +545,9 @@ class PasswordPattern{
 		}
 	}
 	
+	/* Execute the password pattern by given a String key and stage number
+	 * @return: List of String pairs (PassPhrase group, PassPhrase)
+	 */
 	public List<Tuple<String>> generatePassword(String key, int stage){
 		Random r = new Random((long)key.hashCode() * stage);
 		ArrayList<Tuple<String>> pw = new ArrayList<>();
@@ -458,17 +556,22 @@ class PasswordPattern{
 			double cumsum = 0;
 			String qKey= null;
 			String selection = null;
-			for(Tuple t : l)
+			for(Tuple t : l){
 				if(rand <= (cumsum += ((Double) t.get(0)).doubleValue())){
 					List<String> candidates = candidateMap.get(qKey = (String) t.get(1));
 					selection = candidates.get(r.nextInt(candidates.size()));
 					break;
 				}
+			}
 			pw.add(selection == null ? new Tuple<>("(Skip)", "") : new Tuple<>(qKey, selection));
 		}
 		return pw;
 	}
 	
+	/* Takes the result of a correctly formatted query, and parse into a list of PasswordPatterns
+	 * @param: ResultSet
+	 * @return: List of PasswordPatterns
+	 */
 	public static List<PasswordPattern> compileQuery(ResultSet r) throws SQLException{
 		List<PasswordPattern> rtn = new ArrayList<>();
 		while(r.next()){
