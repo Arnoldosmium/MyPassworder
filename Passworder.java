@@ -1,8 +1,8 @@
-/** My Passworder Ver 0.11
+/** My Passworder Ver 0.12
   * @author Arnold Lin
   * @date first commit 2016/12/31, updated at 2017/1/3
   * 
-  * A quick desktop software that helps to create and keep passwords.
+  * A light desktop software that helps to create and keep passwords.
   * The key idea is: people are more likely to retrieve memory if a "clue word" is provided.
   * My passworder is responsible to remember "clue words", e.g. my birthday, the brand of my first car, the date I met her...
   * (You can also put password here; yet it is discouraged due to security reasons, apparently)
@@ -205,7 +205,7 @@ class MainFrame extends JFrame implements WindowListener{
 		gbc.insets = new Insets(0,10,10,10);
 		right.add(cModel,gbc);
 		cModel.addActionListener(e ->{
-			if(JOptionPane.showConfirmDialog(null, "The current password model will be used.\n"
+			if(JOptionPane.showConfirmDialog(this, "The current password model will be used.\n"
 					+ "The old versions will not be recoverable.\n"
 					+ "Are you sure?", "Change password model", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION)
 				applyCurrentModel();
@@ -232,21 +232,21 @@ class MainFrame extends JFrame implements WindowListener{
 		JPanel threeBtn = new JPanel(new GridLayout(1,3,10,10));
 		threeBtn.add(plus = new JGraphicsRB(JGraphicsRB.PLUS));
 		plus.addActionListener((e) -> {
-			String result = JOptionPane.showInputDialog(null, "Please enter a name of the new password instance", "New Password Instance", JOptionPane.INFORMATION_MESSAGE);
+			String result = JOptionPane.showInputDialog(this, "Please enter a name of the new password instance", "New Password Instance", JOptionPane.INFORMATION_MESSAGE);
 			if(result != null)
 				addWebObject(result);
 			refreshUI();
 		});
 		threeBtn.add(change = new JGraphicsRB(JGraphicsRB.PEN));
 		change.addActionListener(e -> {
-			String result = JOptionPane.showInputDialog(null, "Please enter new name of the password instance", currentSelection.name);
+			String result = JOptionPane.showInputDialog(this, "Please enter new name of the password instance", currentSelection.name);
 			if(result != null)
 				renameWebObject(result);
 			refreshUI();
 		});
 		threeBtn.add(minus = new JGraphicsRB(JGraphicsRB.CROSS));
 		minus.addActionListener(e -> {
-			if(JOptionPane.showConfirmDialog(null, "Removing password instance is not recoverable. Are you sure?", "Remove Password Instance", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+			if(JOptionPane.showConfirmDialog(this, "Removing password instance is not recoverable. Are you sure?", "Remove Password Instance", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
 				removeWebObject();
 			refreshUI();
 		});
@@ -295,7 +295,7 @@ class MainFrame extends JFrame implements WindowListener{
 	}
 	
 	private void initPattern(){
-		JOptionPane.showMessageDialog(null, "Thanks for using MyPassworder.\nBefore you start, please specify your general password structure.",
+		JOptionPane.showMessageDialog(this, "Thanks for using MyPassworder.\nBefore you start, please specify your general password structure.",
 				"First Time User", JOptionPane.INFORMATION_MESSAGE);
 		editItem.doClick();
 	}
@@ -320,7 +320,7 @@ class MainFrame extends JFrame implements WindowListener{
 			prp.setInt(5, 0);
 			prp.executeUpdate();
 		}catch (Exception e) {
-			JOptionPane.showMessageDialog(null, String.format("%s - Failed to update database.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, String.format("%s - Failed to update database.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		// Then, updated memory
@@ -335,7 +335,7 @@ class MainFrame extends JFrame implements WindowListener{
 			prp.setString(2, currentSelection.nameid);
 			prp.executeUpdate();
 		}catch (SQLException e) {
-			JOptionPane.showMessageDialog(null, String.format("%s - Failed to update the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, String.format("%s - Failed to update the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		currentSelection.name = name;
@@ -348,7 +348,7 @@ class MainFrame extends JFrame implements WindowListener{
 			prp.setString(2, currentSelection.nameid);
 			prp.executeUpdate();
 		}catch (SQLException e) {
-			JOptionPane.showMessageDialog(null, String.format("%s - Failed to update the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, String.format("%s - Failed to update the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		currentSelection.stage += 1;
@@ -361,7 +361,7 @@ class MainFrame extends JFrame implements WindowListener{
 			prp.setString(2, currentSelection.nameid);
 			prp.executeUpdate();
 		}catch (SQLException e) {
-			JOptionPane.showMessageDialog(null, String.format("%s - Failed to update the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, String.format("%s - Failed to update the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		currentSelection.stage = 1;
@@ -374,7 +374,7 @@ class MainFrame extends JFrame implements WindowListener{
 			prp.setString(1, currentSelection.nameid);
 			prp.executeUpdate();
 		}catch (SQLException e) {
-			JOptionPane.showMessageDialog(null, String.format("%s - Failed to remove the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, String.format("%s - Failed to remove the password instance.", e.getMessage()), "Database Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		lwebs.remove(webs.getSelectedIndex());
@@ -399,7 +399,7 @@ class MainFrame extends JFrame implements WindowListener{
 		
 		// Hey, don't play around with my little program
 		if(currentSelection.pwVersion >= patterns.size()){
-			JOptionPane.showMessageDialog(null, "Incorrect password structure version. Apply with the latest version", "DATABASE CORRUPTION",
+			JOptionPane.showMessageDialog(this, "Incorrect password structure version. Apply with the latest version", "DATABASE CORRUPTION",
 					JOptionPane.ERROR_MESSAGE);
 			applyCurrentModel();
 		}
@@ -465,7 +465,7 @@ class MainFrame extends JFrame implements WindowListener{
 			try{
 				this.refreshDB();
 			}catch(Exception e1){
-				JOptionPane.showMessageDialog(null, e1.getClass().toString() + " - Error occured while retrieving data", "DATA ERROR", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, e1.getClass().toString() + " - Error occured while retrieving data", "DATA ERROR", JOptionPane.ERROR_MESSAGE);
 			}
 	}
 

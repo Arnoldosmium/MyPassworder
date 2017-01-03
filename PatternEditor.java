@@ -93,7 +93,7 @@ class PatternEditor extends JFrame implements ListDataListener, WindowListener{
 			this.leftPane.saveToSQL(conn);
 			this.dataManager.saveToSQL(conn);
 		} catch (SQLException e1) {
-			JOptionPane.showMessageDialog(null, String.format("%s - Error occurred while saving data.", e1.getClass().toString()), "SQL ERROR", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, String.format("%s - Error occurred while saving data.", e1.getClass().toString()), "SQL ERROR", JOptionPane.ERROR_MESSAGE);
 			e1.printStackTrace(System.err);
 		}
 		this.parent.setVisible(true);
@@ -313,13 +313,13 @@ class FullCardPane extends JPanel implements ListSelectionListener, ActionListen
 			return;
 		}else if(s == add){
 			do{
-				if((result = JOptionPane.showInputDialog("Please enter the name of the new component:", "DefaultName")) == null)
+				if((result = JOptionPane.showInputDialog(this, "Please enter the name of the new component:", "DefaultName")) == null)
 					return;
 				result = Utils.titleSafeCleanse(result);
 				if(result.length() == 0)
-					JOptionPane.showMessageDialog(null, "Invalid component name", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(this, "Invalid component name", "Error", JOptionPane.ERROR_MESSAGE);
 				else if(backend.contains(result)){
-					JOptionPane.showMessageDialog(null, "Repetitive component name", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(this, "Repetitive component name", "Error", JOptionPane.ERROR_MESSAGE);
 					result = "";
 				}
 			}while(result.length() == 0);
@@ -330,9 +330,9 @@ class FullCardPane extends JPanel implements ListSelectionListener, ActionListen
 					return;
 				result = Utils.titleSafeCleanse(result);
 				if(result.length() == 0)
-					JOptionPane.showMessageDialog(null, "Invalid component name", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(this, "Invalid component name", "Error", JOptionPane.ERROR_MESSAGE);
 				else if(backend.contains(result) && !result.equals(parts.getSelectedValue())){
-					JOptionPane.showMessageDialog(null, "Repetitive component name", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(this, "Repetitive component name", "Error", JOptionPane.ERROR_MESSAGE);
 					result = "";
 				}
 			}while(result.length() == 0);
